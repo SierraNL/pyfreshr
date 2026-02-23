@@ -52,14 +52,16 @@ jobs:
   publish:
     name: Publish to PyPI
     runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+
+    permissions:
+      id-token: write
+
     environment: 
       name: pypi
       url: https://pypi.org/p/pyfreshr
-    permissions:
-      # IMPORTANT: this permission is mandatory for Trusted Publishing
-      id-token: write
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    
     steps:
       - name: Download built artifacts 
         uses: actions/download-artifact@v4 
@@ -68,4 +70,4 @@ jobs:
           path: dist
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.5.0
+        uses: pypa/gh-action-pypi-publish@v1.13.0
