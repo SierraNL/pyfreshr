@@ -11,7 +11,8 @@
                 "ms-python.vscode-pylance",
                 "GitHub.vscode-pull-request-github",
                 "GitHub.copilot",
-                "GitHub.copilot-chat"
+                "GitHub.copilot-chat",
+                "anthropic.claude-code"
             ]
         }
     },
