@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# setuptools-scm generated version file
+src/pyfreshr/_version.py
+
+# setuptools-scm generated version file
+src/pyfreshr/_version.py
+
 # Distribution / packaging
 .Python
 build/
