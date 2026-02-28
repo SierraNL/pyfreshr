@@ -15,12 +15,12 @@ import argparse
 import getpass
 from typing import Optional
 
-from pyfreshr import ScraperClient, Device, DeviceCurrent
+from pyfreshr import FreshrClient, Device, DeviceCurrent
 from pyfreshr.const import LOGIN_PAGE, LOGIN_API, DEVICES_PAGE
 
 
 async def main(username: str, password: str, debug: bool = False) -> None:
-    client = ScraperClient()
+    client = FreshrClient()
     try:
         # Use constant URLs from `const.py` so full endpoints are used.
         await client.login(

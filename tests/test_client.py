@@ -1,6 +1,6 @@
 import json
 import pytest
-from pyfreshr import ScraperClient, Device, DeviceCurrent
+from pyfreshr import FreshrClient, Device, DeviceCurrent
 from pyfreshr.exceptions import LoginError
 from pyfreshr.const import LOGIN_PAGE, DEVICES_PAGE, DEVICES_API
 
@@ -82,7 +82,7 @@ async def test_login_sets_logged_in():
         return DummyResponse(status=200, text=json.dumps({"auth_token": "sometoken"}))
 
     session = DummySession(get_resp=get_resp, post_resp=post_resp)
-    client = ScraperClient("https://example.com", session=session)
+    client = FreshrClient("https://example.com", session=session)
     await client.login("user@example.com", "pass")
     assert client.logged_in
     assert client.sess_token == "tokval"
@@ -97,7 +97,7 @@ async def test_login_fails_without_sess_token():
         return DummyResponse(status=200, text=json.dumps({"auth_token": "sometoken"}))
 
     session = DummySession(get_resp=get_resp, post_resp=post_resp)
-    client = ScraperClient("https://example.com", session=session)
+    client = FreshrClient("https://example.com", session=session)
     with pytest.raises(LoginError):
         await client.login("user@example.com", "pass")
 
@@ -115,7 +115,7 @@ async def test_fetch_devices_returns_units():
 
     cookie_jar = DummyCookieJar({"sess_token": "tok"})
     session = DummySession(get_resp=get_resp, post_resp=lambda url: DummyResponse(), cookie_jar=cookie_jar)
-    client = ScraperClient("https://example.com", session=session)
+    client = FreshrClient("https://example.com", session=session)
     client.logged_in = True
     client.sess_token = "tok"
 
@@ -140,7 +140,7 @@ async def test_fetch_device_current():
 
     cookie_jar = DummyCookieJar({"sess_token": "tok"})
     session = DummySession(get_resp=get_resp, post_resp=lambda url: DummyResponse(), cookie_jar=cookie_jar)
-    client = ScraperClient("https://example.com", session=session)
+    client = FreshrClient("https://example.com", session=session)
     client.logged_in = True
     client.sess_token = "tok"
 
@@ -160,7 +160,7 @@ async def test_fetch_device_current_missing_returns_default():
 
     cookie_jar = DummyCookieJar({"sess_token": "tok"})
     session = DummySession(get_resp=get_resp, post_resp=lambda url: DummyResponse(), cookie_jar=cookie_jar)
-    client = ScraperClient("https://example.com", session=session)
+    client = FreshrClient("https://example.com", session=session)
     client.logged_in = True
     client.sess_token = "tok"
 
@@ -187,7 +187,7 @@ async def test_session_reuse_skips_login():
 
     cookie_jar = DummyCookieJar({"sess_token": "tok"})
     session = DummySession(get_resp=get_resp, post_resp=lambda url: DummyResponse(), cookie_jar=cookie_jar)
-    client = ScraperClient("https://example.com", session=session)
+    client = FreshrClient("https://example.com", session=session)
     client.logged_in = True
     client.sess_token = "tok"
 
@@ -217,7 +217,7 @@ async def test_expired_session_triggers_relogin():
         return DummyResponse(status=200, text=json.dumps({"auth_token": "newtoken"}))
 
     session = DummySession(get_resp=get_resp, post_resp=post_resp)
-    client = ScraperClient("https://example.com", session=session)
+    client = FreshrClient("https://example.com", session=session)
     client._credentials = ("user@example.com", "pass")
     client._login_params = {
         "username_field": "email",
@@ -262,7 +262,7 @@ async def test_401_triggers_relogin_and_retry():
 
     cookie_jar = DummyCookieJar({"sess_token": "tok"})
     session = DummySession(get_resp=get_resp, post_resp=post_resp, cookie_jar=cookie_jar)
-    client = ScraperClient("https://example.com", session=session)
+    client = FreshrClient("https://example.com", session=session)
     client.logged_in = True
     client.sess_token = "tok"
     client._credentials = ("user@example.com", "pass")
@@ -297,7 +297,7 @@ async def test_restore_session_skips_login():
         return DummyResponse(status=200, text=json.dumps({"user_units": {"units": []}}))
 
     session = DummySession(get_resp=get_resp, post_resp=lambda url: DummyResponse())
-    client = ScraperClient("https://example.com", session=session)
+    client = FreshrClient("https://example.com", session=session)
     client.restore_session("saved-token")
 
     assert client.logged_in
@@ -324,7 +324,7 @@ async def test_on_session_update_called_after_login():
         return DummyResponse(status=200, text=json.dumps({"auth_token": "sometoken"}))
 
     session = DummySession(get_resp=get_resp, post_resp=post_resp)
-    client = ScraperClient(
+    client = FreshrClient(
         "https://example.com",
         session=session,
         on_session_update=received_tokens.append,

@@ -11,7 +11,7 @@ from .const import LOGIN_PAGE, LOGIN_API, DEVICES_PAGE
 from .const import DEVICES_API
 
 
-class ScraperClient:
+class FreshrClient:
     """Async client for the Fresh-R / bw-log.com API using `aiohttp`."""
 
     def __init__(
