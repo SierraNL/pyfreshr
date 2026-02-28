@@ -1,6 +1,6 @@
 [project]
 name = "pyfreshr"
-version = "0.1.0"
+version = "0.9.0"
 description = "A small Python library to login to a website and scrape data into structured objects."
 readme = "README.md"
 requires-python = ">=3.8"
