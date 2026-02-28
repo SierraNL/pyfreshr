@@ -10,16 +10,27 @@ Notes:
 - Run locally without installation with: `PYTHONPATH=src python examples/example_usage.py`
 """
 import asyncio
+import os
+import argparse
+import getpass
 from typing import Optional
 
-from pyfreshr import ScraperClient
+from pyfreshr import ScraperClient, Device, DeviceCurrent
+from pyfreshr.const import LOGIN_PAGE, LOGIN_API, DEVICES_PAGE
 
 
-async def main(username: str, password: str, base_url: str = "https://dashboard.bw-log.com") -> None:
-    client = ScraperClient(base_url=base_url)
+async def main(username: str, password: str, debug: bool = False) -> None:
+    client = ScraperClient()
     try:
-        # Adjust login path/fields for your target if needed
-        await client.login("/login", username, password)
+        # Use constant URLs from `const.py` so full endpoints are used.
+        await client.login(
+            username,
+            password,
+            login_page_path=LOGIN_PAGE,
+            api_path=LOGIN_API,
+            devices_path=DEVICES_PAGE,
+            debug=debug,
+        )
     except Exception as exc:
         print("login failed:", exc)
         await client.close()
@@ -27,22 +38,43 @@ async def main(username: str, password: str, base_url: str = "https://dashboard.
 
     # Fetch devices for the account
     devices = await client.fetch_devices(tzoffset="60")
-    print("Devices:", devices)
+    print("Devices:")
+    for d in devices:
+        if isinstance(d, Device):
+            print(" -", d.id, "(active_from=", d.active_from, ")")
+        else:
+            print(" -", d)
 
     # If at least one device exists, fetch its current data
     if devices:
-        serial = devices[0].get("id")
+        serial = devices[0].id if isinstance(devices[0], Device) else None
         if serial:
-            data = await client.fetch_device_current(serial, convert_flow=True)
-            print(f"Current data for {serial}:", data)
+            data: DeviceCurrent = await client.fetch_device_current(serial, convert_flow=True)
+            print(f"Current data for {serial}:")
+            print(" t1:", data.t1)
+            print(" co2:", data.co2)
+            print(" flow:", data.flow)
 
     await client.close()
 
 
-if __name__ == "__main__":
-    # Replace with real credentials when running
-    import os
+def _get_credentials(cli_user: Optional[str], cli_pass: Optional[str]) -> tuple[str, str]:
+    user = cli_user or os.environ.get("FRESHR_USER")
+    pwd = cli_pass or os.environ.get("FRESHR_PASS")
+    if not user:
+        user = input("FRESHR username: ")
+    if not pwd:
+        pwd = getpass.getpass("FRESHR password: ")
+    return user, pwd
 
-    USER = os.environ.get("FRESHR_USER", "myuser")
-    PASS = os.environ.get("FRESHR_PASS", "mypassword")
-    asyncio.run(main(USER, PASS))
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--user", help="Freshr username")
+    parser.add_argument("--pass", dest="password", help="Freshr password")
+    parser.add_argument("--debug", action="store_true", help="Print debug HTTP responses during login")
+    args = parser.parse_args()
+
+    USER, PASS = _get_credentials(args.user, args.password)
+    asyncio.run(main(USER, PASS, debug=args.debug))
+    # If you want debug output for the login flow, call login with `debug=True`.

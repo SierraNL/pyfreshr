@@ -1,4 +1,4 @@
 from .client import ScraperClient
-from .models import ScrapeResult
+from .models import Device, DeviceCurrent
 
-__all__ = ["ScraperClient", "ScrapeResult"]
+__all__ = ["ScraperClient", "Device", "DeviceCurrent"]
