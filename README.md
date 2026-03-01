@@ -1,5 +1,5 @@
 # pyfreshr
-Python library around the Fresh-R web interface for use in a Home Assistant integration.
+Python library around the Fresh-r web interface for use in a Home Assistant integration.
 
 ## Installation
 

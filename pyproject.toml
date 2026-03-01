@@ -1,7 +1,7 @@
 [project]
 name = "pyfreshr"
 dynamic = ["version"]
-description = "Async Python client for the Fresh-R / bw-log.com API."
+description = "Async Python client for the Fresh-r / bw-log.com API."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}

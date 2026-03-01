@@ -147,8 +147,8 @@ async def test_fetch_device_current():
     client.sess_token = "tok"
 
     data = await client.fetch_device_current(serial)
-    assert data.t1 == "19.4"
-    assert data.co2 == "619"
+    assert data.t1 == 19.4
+    assert data.co2 == 619
     assert isinstance(data.flow, float)
     # flow=1040 → FRESH_R calibration: (1040-700)/30 + 20 = 31.3
     assert abs(data.flow - 31.3) < 1e-6

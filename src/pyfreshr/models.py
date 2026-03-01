@@ -67,23 +67,30 @@ class DeviceReadings:
             return cls()
         known = {"t1", "t2", "t3", "t4", "flow", "co2", "hum", "dp", "temp"}
         extras = {k: v for k, v in data.items() if k not in known}
-        # do not coerce types here; callers may have already converted flow
-        flow_val = data.get("flow")
-        try:
-            if flow_val is not None and not isinstance(flow_val, float):
-                flow_val = float(flow_val)
-        except (TypeError, ValueError):
-            flow_val = None
+
+        def _float(key: str) -> float | None:
+            v = data.get(key)
+            try:
+                return float(v) if v is not None else None
+            except (TypeError, ValueError):
+                return None
+
+        def _int(key: str) -> int | None:
+            v = data.get(key)
+            try:
+                return int(v) if v is not None else None
+            except (TypeError, ValueError):
+                return None
 
         return cls(
-            t1=data.get("t1"),
-            t2=data.get("t2"),
-            t3=data.get("t3"),
-            t4=data.get("t4"),
-            flow=flow_val,
-            co2=data.get("co2"),
-            hum=data.get("hum"),
-            dp=data.get("dp"),
-            temp=data.get("temp"),
+            t1=_float("t1"),
+            t2=_float("t2"),
+            t3=_float("t3"),
+            t4=_float("t4"),
+            flow=_float("flow"),
+            co2=_int("co2"),
+            hum=_float("hum"),
+            dp=_float("dp"),
+            temp=_float("temp"),
             extras=extras,
         )

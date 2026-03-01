@@ -9,7 +9,6 @@ This project is a python library that does what a user does to retrieve data for
 - `README.md`: This file provides an overview of the project and instructions for installation and usage
 
 ## Libraries and Tools
-- `requests`: This library is used to make HTTP requests to the fresh-r air ventilation system's API.
 - `aiohttp`: This library is used for making asynchronous HTTP requests to the API.
 - `pytest`: This library is used for writing and running unit tests.
 
