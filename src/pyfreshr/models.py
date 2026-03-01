@@ -1,41 +1,72 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Any, List
+from enum import Enum
+from typing import Any
+
+
+class DeviceType(str, Enum):
+    """Categorised device type derived from the raw ``type`` string returned by the API."""
+
+    FRESH_R = "fresh-r"
+    FORWARD = "forward"
+    MONITOR = "monitor"
 
 
 @dataclass
-class Device:
-    id: Optional[str] = None
-    active_from: Optional[str] = None
+class DeviceSummary:
+    id: str | None = None
+    type: str = "unknown"
+    active_from: str | None = None
     # preserve any extra fields received
-    extras: Dict[str, Any] = field(default_factory=dict)
+    extras: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def device_type(self) -> DeviceType:
+        """Return the categorised :class:`DeviceType` for this device.
+
+        Mirrors the JS logic: ``deviceType.includes("forward")`` etc.
+        Defaults to :attr:`DeviceType.FRESH_R` for unrecognised type strings.
+        """
+        t = (self.type or "").lower()
+        if "forward" in t:
+            return DeviceType.FORWARD
+        if "monitor" in t:
+            return DeviceType.MONITOR
+        return DeviceType.FRESH_R
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> Device:
+    def from_dict(cls, data: dict[str, Any]) -> DeviceSummary:
         if data is None:
             return cls()
-        extras = {k: v for k, v in data.items() if k not in ("id", "active_from")}
-        return cls(id=data.get("id"), active_from=data.get("active_from"), extras=extras)
+        extras = {k: v for k, v in data.items() if k not in ("id", "type", "active_from")}
+        return cls(
+            id=data.get("id"),
+            type=data.get("type", "unknown"),
+            active_from=data.get("active_from"),
+            extras=extras,
+        )
 
 
 @dataclass
-class DeviceCurrent:
-    t1: Optional[Any] = None
-    t2: Optional[Any] = None
-    t3: Optional[Any] = None
-    t4: Optional[Any] = None
-    flow: Optional[float] = None
-    co2: Optional[Any] = None
-    hum: Optional[Any] = None
-    dp: Optional[Any] = None
-    extras: Dict[str, Any] = field(default_factory=dict)
+class DeviceReadings:
+    t1: float | None = None
+    t2: float | None = None
+    t3: float | None = None
+    t4: float | None = None
+    flow: float | None = None
+    co2: int | None = None
+    hum: float | None = None
+    dp: float | None = None
+    temp: float | None = None
+    extras: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> DeviceCurrent:
+    def from_dict(cls, data: dict[str, Any]) -> DeviceReadings:
         if data is None:
             return cls()
-        extras = {k: v for k, v in data.items() if k not in ("t1", "t2", "t3", "t4", "flow", "co2", "hum", "dp")}
+        known = {"t1", "t2", "t3", "t4", "flow", "co2", "hum", "dp", "temp"}
+        extras = {k: v for k, v in data.items() if k not in known}
         # do not coerce types here; callers may have already converted flow
         flow_val = data.get("flow")
         try:
@@ -53,5 +84,6 @@ class DeviceCurrent:
             co2=data.get("co2"),
             hum=data.get("hum"),
             dp=data.get("dp"),
+            temp=data.get("temp"),
             extras=extras,
         )

@@ -9,14 +9,13 @@ Notes:
 - The client is asynchronous; this example uses `asyncio.run`.
 - Run locally without installation with: `PYTHONPATH=src python examples/example_usage.py`
 """
-import asyncio
-import os
 import argparse
+import asyncio
 import getpass
-from typing import Optional
+import os
 
-from pyfreshr import FreshrClient, Device, DeviceCurrent
-from pyfreshr.const import LOGIN_PAGE, LOGIN_API, DEVICES_PAGE
+from pyfreshr import DeviceReadings, DeviceSummary, FreshrClient
+from pyfreshr.const import DEVICES_PAGE, LOGIN_API, LOGIN_PAGE
 
 
 async def main(username: str, password: str, debug: bool = False) -> None:
@@ -38,27 +37,25 @@ async def main(username: str, password: str, debug: bool = False) -> None:
 
     # Fetch devices for the account
     devices = await client.fetch_devices(tzoffset="60")
-    print("Devices:")
+    print("DeviceSummarys:")
     for d in devices:
-        if isinstance(d, Device):
+        if isinstance(d, DeviceSummary):
             print(" -", d.id, "(active_from=", d.active_from, ")")
         else:
             print(" -", d)
 
     # If at least one device exists, fetch its current data
     if devices:
-        serial = devices[0].id if isinstance(devices[0], Device) else None
-        if serial:
-            data: DeviceCurrent = await client.fetch_device_current(serial, convert_flow=True)
-            print(f"Current data for {serial}:")
-            print(" t1:", data.t1)
-            print(" co2:", data.co2)
-            print(" flow:", data.flow)
+        data: DeviceReadings = await client.fetch_device_current(devices[0])
+        print(f"Current data for {devices[0].id}:")
+        print(" t1:", data.t1)
+        print(" co2:", data.co2)
+        print(" flow:", data.flow)
 
     await client.close()
 
 
-def _get_credentials(cli_user: Optional[str], cli_pass: Optional[str]) -> tuple[str, str]:
+def _get_credentials(cli_user: str | None, cli_pass: str | None) -> tuple[str, str]:
     user = cli_user or os.environ.get("FRESHR_USER")
     pwd = cli_pass or os.environ.get("FRESHR_PASS")
     if not user:
@@ -72,7 +69,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--user", help="Freshr username")
     parser.add_argument("--pass", dest="password", help="Freshr password")
-    parser.add_argument("--debug", action="store_true", help="Print debug HTTP responses during login")
+    parser.add_argument(
+        "--debug", action="store_true", help="Print debug HTTP responses during login"
+    )
     args = parser.parse_args()
 
     USER, PASS = _get_credentials(args.user, args.password)
