@@ -56,7 +56,7 @@ class DeviceReadings:
     t4: float | None = None
     flow: float | None = None
     co2: int | None = None
-    hum: float | None = None
+    hum: int | None = None
     dp: float | None = None
     temp: float | None = None
     extras: dict[str, Any] = field(default_factory=dict)
