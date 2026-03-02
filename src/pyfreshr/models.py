@@ -15,7 +15,7 @@ class DeviceType(str, Enum):
 
 @dataclass
 class DeviceSummary:
-    id: str | None = None
+    id: str
     type: str = "unknown"
     active_from: str | None = None
     # preserve any extra fields received
