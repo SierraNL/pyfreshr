@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from pyfreshr import DeviceReadings, DeviceSummary, FreshrClient, LoginError, ScrapeError
+from pyfreshr import DeviceReadings, DeviceSummary, FreshrClient, LoginError, ApiResponseError
 from pyfreshr.client import _adjusted_humidity, _calibrate_flow, _process_readings
 from pyfreshr.models import DeviceType
 
@@ -469,19 +469,18 @@ def test_process_readings_invalid_humidity_left_unchanged():
 # ---------------------------------------------------------------------------
 
 def test_device_type_forward():
-    d = DeviceSummary(type="fresh-r-forward-v2")
+    d = DeviceSummary(id="test", type="fresh-r-forward-v2")
     assert d.device_type == DeviceType.FORWARD
 
 
 def test_device_type_monitor():
-    d = DeviceSummary(type="fresh-r-monitor")
+    d = DeviceSummary(id="test", type="fresh-r-monitor")
     assert d.device_type == DeviceType.MONITOR
 
 
 def test_device_summary_from_dict_none():
-    d = DeviceSummary.from_dict(None)
-    assert d.id is None
-    assert d.type == "unknown"
+    with pytest.raises((ValueError, KeyError)):
+        DeviceSummary.from_dict(None)
 
 
 def test_device_readings_from_dict_none():
@@ -571,7 +570,7 @@ async def test_fetch_devices_raises_on_server_error():
     client.logged_in = True
     client.sess_token = "tok"
 
-    with pytest.raises(ScrapeError):
+    with pytest.raises(ApiResponseError):
         await client.fetch_devices()
 
 
@@ -587,7 +586,7 @@ async def test_fetch_devices_raises_on_invalid_json():
     client.logged_in = True
     client.sess_token = "tok"
 
-    with pytest.raises(ScrapeError):
+    with pytest.raises(ApiResponseError):
         await client.fetch_devices()
 
 
@@ -649,7 +648,7 @@ async def test_fetch_device_current_raises_on_server_error():
     client.logged_in = True
     client.sess_token = "tok"
 
-    with pytest.raises(ScrapeError):
+    with pytest.raises(ApiResponseError):
         await client.fetch_device_current("e:bad/001")
 
 
@@ -665,7 +664,7 @@ async def test_fetch_device_current_raises_on_invalid_json():
     client.logged_in = True
     client.sess_token = "tok"
 
-    with pytest.raises(ScrapeError):
+    with pytest.raises(ApiResponseError):
         await client.fetch_device_current("e:bad/001")
 
 

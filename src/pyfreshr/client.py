@@ -26,7 +26,7 @@ from .const import (
     LOGIN_API,
     LOGIN_PAGE,
 )
-from .exceptions import LoginError, ScrapeError
+from .exceptions import LoginError, ApiResponseError
 from .models import DeviceReadings, DeviceSummary, DeviceType
 
 _USER_AGENT = (
@@ -499,13 +499,13 @@ class FreshrClient:
                 if status in (401, 403) and attempt == 0:
                     reauth_needed = True
                 elif not (200 <= status < 300):
-                    raise ScrapeError(f"failed to fetch devices: {status}")
+                    raise ApiResponseError(f"failed to fetch devices: {status}")
                 else:
                     text = await resp.text()
                     try:
                         data = json.loads(text)
                     except (ValueError, TypeError):
-                        raise ScrapeError("devices response is not JSON")
+                        raise ApiResponseError("devices response is not JSON")
 
             if reauth_needed:
                 self.logged_in = False
@@ -591,13 +591,13 @@ class FreshrClient:
                 if status in (401, 403) and attempt == 0:
                     reauth_needed = True
                 elif not (200 <= status < 300):
-                    raise ScrapeError(f"failed to fetch device {serial}: {status}")
+                    raise ApiResponseError(f"failed to fetch device {serial}: {status}")
                 else:
                     text = await resp.text()
                     try:
                         data = json.loads(text)
                     except (ValueError, TypeError):
-                        raise ScrapeError("device response is not JSON")
+                        raise ApiResponseError("device response is not JSON")
 
             if reauth_needed:
                 self.logged_in = False

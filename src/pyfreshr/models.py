@@ -37,11 +37,11 @@ class DeviceSummary:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> DeviceSummary:
-        if data is None:
-            return cls()
+        if not data:
+            raise ValueError("DeviceSummary.from_dict requires a non-empty dict with an 'id' key")
         extras = {k: v for k, v in data.items() if k not in ("id", "type", "active_from")}
         return cls(
-            id=data.get("id"),
+            id=data["id"],
             type=data.get("type", "unknown"),
             active_from=data.get("active_from"),
             extras=extras,
