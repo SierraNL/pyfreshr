@@ -1,5 +1,5 @@
 from .client import FreshrClient
-from .exceptions import LoginError, ScrapeError
+from .exceptions import ApiResponseError, LoginError
 from .models import DeviceReadings, DeviceSummary, DeviceType
 
 try:
@@ -14,6 +14,6 @@ __all__ = [
     "DeviceReadings",
     "DeviceType",
     "LoginError",
-    "ScrapeError",
+    "ApiResponseError",
     "__version__",
 ]

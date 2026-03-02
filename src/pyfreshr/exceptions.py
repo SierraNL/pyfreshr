@@ -1,5 +1,5 @@
 class LoginError(Exception):
     pass
 
-class ScrapeError(Exception):
+class ApiResponseError(Exception):
     pass
