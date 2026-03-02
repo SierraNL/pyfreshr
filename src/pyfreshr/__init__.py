@@ -1,5 +1,5 @@
 from .client import FreshrClient
-from .exceptions import LoginError, ApiResponseError
+from .exceptions import ApiResponseError, LoginError
 from .models import DeviceReadings, DeviceSummary, DeviceType
 
 try:

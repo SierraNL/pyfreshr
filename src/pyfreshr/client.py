@@ -26,7 +26,7 @@ from .const import (
     LOGIN_API,
     LOGIN_PAGE,
 )
-from .exceptions import LoginError, ApiResponseError
+from .exceptions import ApiResponseError, LoginError
 from .models import DeviceReadings, DeviceSummary, DeviceType
 
 _USER_AGENT = (

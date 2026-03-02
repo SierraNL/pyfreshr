@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from pyfreshr import DeviceReadings, DeviceSummary, FreshrClient, LoginError, ApiResponseError
+from pyfreshr import ApiResponseError, DeviceReadings, DeviceSummary, FreshrClient, LoginError
 from pyfreshr.client import _adjusted_humidity, _calibrate_flow, _process_readings
 from pyfreshr.models import DeviceType
 
