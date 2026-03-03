@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.13", "3.14"]
 
     steps:
       - name: Checkout
@@ -41,13 +41,13 @@ jobs:
         run: python -m coverage report --fail-under=85 || echo "::warning::Coverage dropped below 85%"
 
       - name: Build distribution (only on latest Python)
-        if: matrix.python-version == '3.12'
+        if: matrix.python-version == '3.14'
         run: |
           pip install build
           python -m build
 
       - name: Upload built artifacts
-        if: matrix.python-version == '3.12'
+        if: matrix.python-version == '3.14'
         uses: actions/upload-artifact@v4
         with:
           name: dist

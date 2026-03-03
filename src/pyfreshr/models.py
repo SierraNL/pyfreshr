@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class DeviceType(str, Enum):
+class DeviceType(StrEnum):
     """Categorised device type derived from the raw ``type`` string returned by the API."""
 
     FRESH_R = "fresh-r"
