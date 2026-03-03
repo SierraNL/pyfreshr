@@ -17,8 +17,23 @@ FORWARD_FLOW_DIVISOR: int = 3
 
 # Default fields requested per device type
 FIELDS_FRESH_R: list[str] = [
-    "t1", "t2", "t3", "t4", "flow", "co2", "hum", "dp",
-    "d5_25", "d4_25", "d4_03", "d5_03", "d5_1", "d4_1", "d1_25", "d1_03", "d1_1",
+    "t1",
+    "t2",
+    "t3",
+    "t4",
+    "flow",
+    "co2",
+    "hum",
+    "dp",
+    "d5_25",
+    "d4_25",
+    "d4_03",
+    "d5_03",
+    "d5_1",
+    "d4_1",
+    "d1_25",
+    "d1_03",
+    "d1_1",
 ]
 FIELDS_FORWARD: list[str] = ["date", "t1", "t2", "t3", "t4", "flow", "co2", "hum", "dp", "temp"]
 FIELDS_MONITOR: list[str] = ["date", "co2", "hum", "dp", "temp", "d1_25"]

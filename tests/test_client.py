@@ -30,6 +30,7 @@ class DummyResponse:
         # Mimic the real server: always raise ContentTypeError so login_post
         # falls through to its json.loads(text) fallback.
         import aiohttp
+
         raise aiohttp.ContentTypeError(None, None)
 
     async def __aenter__(self):
@@ -70,6 +71,7 @@ class DummySession:
 # Login tests
 # ---------------------------------------------------------------------------
 
+
 async def test_login_sets_logged_in():
     def get_resp(url):
         if "page=devices" in url:  # finalize URL: bw-log.com/?page=devices&t=…
@@ -106,6 +108,7 @@ async def test_login_fails_without_sess_token():
 # Fetch tests (session pre-seeded, no login triggered)
 # ---------------------------------------------------------------------------
 
+
 async def test_fetch_devices_returns_units():
     devices_payload = {"user_units": {"units": [{"id": "e:1", "active_from": "0000-00-00"}]}}
 
@@ -130,8 +133,12 @@ async def test_fetch_device_current():
     serial = "e:232208/170053"
     resp_payload = {
         f"{serial}_current": {
-            "t1": "19.4", "t2": "8.0", "flow": "1040",
-            "co2": "619", "hum": "38", "dp": "9.0",
+            "t1": "19.4",
+            "t2": "8.0",
+            "flow": "1040",
+            "co2": "619",
+            "hum": "38",
+            "dp": "9.0",
         }
     }
 
@@ -177,6 +184,7 @@ async def test_fetch_device_current_missing_returns_default():
 # ---------------------------------------------------------------------------
 # Session management tests
 # ---------------------------------------------------------------------------
+
 
 async def test_session_reuse_skips_login():
     """fetch_devices should not trigger re-login when the session is still valid."""
@@ -286,6 +294,7 @@ async def test_401_triggers_relogin_and_retry():
 # Session persistence tests
 # ---------------------------------------------------------------------------
 
+
 async def test_restore_session_skips_login():
     """restore_session() should mark the client as logged-in without a network call."""
     login_page_calls = 0
@@ -337,6 +346,7 @@ async def test_on_session_update_called_after_login():
 # _calibrate_flow unit tests
 # ---------------------------------------------------------------------------
 
+
 def test_calibrate_flow_fresh_r_above_threshold():
     # (1040 - 700) / 30 + 20 = 31.3
     assert abs(_calibrate_flow(1040.0, DeviceType.FRESH_R) - 31.3) < 1e-9
@@ -373,6 +383,7 @@ def test_calibrate_flow_monitor_not_divided():
 # _adjusted_humidity unit tests
 # ---------------------------------------------------------------------------
 
+
 def test_adjusted_humidity_returns_float():
     result = _adjusted_humidity(50.0, 10.0, 20.0)
     assert isinstance(result, float)
@@ -400,6 +411,7 @@ def test_adjusted_humidity_fallback_on_nan():
 # ---------------------------------------------------------------------------
 # _process_readings unit tests
 # ---------------------------------------------------------------------------
+
 
 def test_process_readings_calibrates_flow_fresh_r():
     raw = {"t1": "19.4", "flow": "1040", "hum": "38", "dp": "9.0"}
@@ -466,6 +478,7 @@ def test_process_readings_invalid_humidity_left_unchanged():
 # DeviceSummary / DeviceReadings model tests
 # ---------------------------------------------------------------------------
 
+
 def test_device_type_forward():
     d = DeviceSummary(id="test", type="fresh-r-forward-v2")
     assert d.device_type == DeviceType.FORWARD
@@ -496,6 +509,7 @@ def test_device_readings_from_dict_invalid_flow():
 # ---------------------------------------------------------------------------
 # FreshrClient utility / lifecycle tests
 # ---------------------------------------------------------------------------
+
 
 def test_make_url_empty_path():
     session = DummySession(
@@ -556,6 +570,7 @@ async def test_ensure_session_raises_without_credentials():
 # fetch_devices error paths
 # ---------------------------------------------------------------------------
 
+
 async def test_fetch_devices_raises_on_server_error():
     def get_resp(url):
         return DummyResponse(status=500)
@@ -591,6 +606,7 @@ async def test_fetch_devices_raises_on_invalid_json():
 # ---------------------------------------------------------------------------
 # fetch_device_current routing and error paths
 # ---------------------------------------------------------------------------
+
 
 async def test_fetch_device_current_forward_routing():
     serial = "e:forward/001"

@@ -13,12 +13,15 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.13", "3.14"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -33,6 +36,9 @@ jobs:
 
       - name: Lint
         run: python -m ruff check src/ tests/ examples/
+
+      - name: Format check
+        run: python -m ruff format --check src/ tests/ examples/
 
       - name: Run tests
         run: pytest -v --cov --cov-report=term-missing

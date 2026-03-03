@@ -9,6 +9,7 @@ Notes:
 - The client is asynchronous; this example uses `asyncio.run`.
 - Run locally without installation with: `PYTHONPATH=src python examples/example_usage.py`
 """
+
 import argparse
 import asyncio
 import getpass

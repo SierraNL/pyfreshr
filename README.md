@@ -1,4 +1,11 @@
 # pyfreshr
+
+[![Build](https://github.com/SierraNL/pyfreshr/actions/workflows/build.yml/badge.svg)](https://github.com/SierraNL/pyfreshr/actions/workflows/build.yml)
+[![PyPI version](https://img.shields.io/pypi/v/pyfreshr)](https://pypi.org/project/pyfreshr/)
+[![Python versions](https://img.shields.io/pypi/pyversions/pyfreshr)](https://pypi.org/project/pyfreshr/)
+[![License: MIT](https://img.shields.io/github/license/SierraNL/pyfreshr)](https://github.com/SierraNL/pyfreshr/blob/main/LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 Python library around the Fresh-r web interface for use in a Home Assistant integration.
 
 ## Installation
