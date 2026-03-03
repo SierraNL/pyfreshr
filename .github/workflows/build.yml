@@ -40,6 +40,9 @@ jobs:
       - name: Format check
         run: python -m ruff format --check src/ tests/ examples/
 
+      - name: Type check
+        run: python -m mypy src/
+
       - name: Run tests
         run: pytest -v --cov --cov-report=term-missing
 

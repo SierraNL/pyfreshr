@@ -49,3 +49,8 @@ omit = ["*/pyfreshr/_version.py"]
 [tool.coverage.report]
 show_missing = true
 fail_under = 75
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+exclude = ["src/pyfreshr/_version\\.py"]
