@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import math
 from collections.abc import Callable
 from typing import Any, NamedTuple
@@ -28,6 +29,8 @@ from .const import (
 )
 from .exceptions import ApiResponseError, LoginError
 from .models import DeviceReadings, DeviceSummary, DeviceType
+
+_LOGGER = logging.getLogger(__name__)
 
 _USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -211,7 +214,6 @@ class FreshrClient:
         login_page_path: str | None = None,
         api_path: str | None = None,
         devices_path: str | None = None,
-        debug: bool = False,
     ) -> None:
         """Log in and establish a session.
 
@@ -228,14 +230,13 @@ class FreshrClient:
             "login_page_path": login_page_path,
             "api_path": api_path,
             "devices_path": devices_path,
-            "debug": debug,
         }
 
         login_page_path = login_page_path or LOGIN_PAGE
         api_path = api_path or LOGIN_API
         devices_path = devices_path or DEVICES_PAGE
 
-        await self._login_get(login_page_path, debug=debug)
+        await self._login_get(login_page_path)
 
         post_result = await self._login_post(
             username,
@@ -244,7 +245,6 @@ class FreshrClient:
             password_field=password_field,
             headers=headers,
             api_path=api_path,
-            debug=debug,
         )
 
         await self._login_finalize(
@@ -252,18 +252,16 @@ class FreshrClient:
             resp_text=post_result.text,
             resp_json=post_result.parsed,
             redirect_location=post_result.location,
-            debug=debug,
         )
 
     # ------------------------------------------------------------------
     # Private login steps
     # ------------------------------------------------------------------
 
-    async def _login_get(self, login_page_path: str | None = None, debug: bool = False) -> None:
+    async def _login_get(self, login_page_path: str | None = None) -> None:
         """Step 1: GET the login page to establish session cookies."""
         page_url = self._make_url(login_page_path or LOGIN_PAGE)
-        if debug:
-            print("[debug] login GET -> url:", page_url)
+        _LOGGER.debug("login GET -> url: %s", page_url)
         _headers = {
             "User-Agent": _USER_AGENT,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -280,7 +278,6 @@ class FreshrClient:
         password_field: str = "password",
         headers: dict[str, str] | None = None,
         api_path: str | None = None,
-        debug: bool = False,
     ) -> _LoginPostResult:
         """Step 2: POST credentials to the login API.
 
@@ -290,8 +287,7 @@ class FreshrClient:
         or when the response body indicates authentication failure.
         """
         url = self._make_url(api_path or LOGIN_API)
-        if debug:
-            print("[debug] login POST -> url:", url)
+        _LOGGER.debug("login POST -> url: %s", url)
         payload: dict[str, str] = {
             username_field: username,
             password_field: password,
@@ -310,20 +306,7 @@ class FreshrClient:
             status = resp.status
             location = resp.headers.get("Location")
             text = await resp.text()
-            if debug:
-                print("[debug] login POST -> status:", status)
-                print("[debug] login POST -> location:", location)
-                try:
-                    print("[debug] login POST -> headers:")
-                    for k, v in dict(resp.headers).items():
-                        print(f"  {k}: {v}")
-                except Exception:
-                    print("[debug] login POST -> headers: <unavailable>")
-                print("[debug] login POST -> body:")
-                try:
-                    print(text)
-                except Exception:
-                    print(repr(text))
+            _LOGGER.debug("login POST -> status: %s, location: %s", status, location)
             if not (200 <= status < 400):
                 raise LoginError(f"login failed: {status}")
 
@@ -350,7 +333,6 @@ class FreshrClient:
         resp_text: str | None = None,
         resp_json: dict[str, Any] | None = None,
         redirect_location: str | None = None,
-        debug: bool = False,
     ) -> None:
         """Step 3: exchange the one-time auth token for a ``sess_token`` cookie.
 
@@ -370,8 +352,7 @@ class FreshrClient:
 
         if devices_url is None:
             raise LoginError("login response did not contain a token or redirect")
-        if debug:
-            print("[debug] login finalize -> visiting devices URL:", devices_url)
+        _LOGGER.debug("login finalize -> visiting devices URL: %s", devices_url)
 
         _headers = {
             "User-Agent": _USER_AGENT,
@@ -382,23 +363,8 @@ class FreshrClient:
         async with self.session.get(
             devices_url, headers=_headers, allow_redirects=False, timeout=self._timeout
         ) as resp:
-            devices_body = await resp.text()
-            if debug:
-                print("[debug] login finalize -> devices status:", resp.status)
-                try:
-                    print("[debug] login finalize -> request headers:")
-                    for k, v in resp.request_info.headers.items():
-                        print(f"  {k}: {v}")
-                except Exception:
-                    print("[debug] login finalize -> request headers: <unavailable>")
-                try:
-                    print("[debug] login finalize -> response headers:")
-                    for k, v in resp.headers.items():
-                        print(f"  {k}: {v}")
-                except Exception:
-                    print("[debug] login finalize -> response headers: <unavailable>")
-                print("[debug] login finalize -> response body:")
-                print(devices_body)
+            await resp.text()
+            _LOGGER.debug("login finalize -> devices status: %s", resp.status)
 
             # Two Set-Cookie headers are typical: one that clears any old token
             # (Max-Age=0) followed by one with the real value. Process all so
@@ -412,8 +378,7 @@ class FreshrClient:
                 if parts[0].lower().startswith("sess_token="):
                     sess_token_value = parts[0].split("=", 1)[1]
 
-        if debug:
-            print("[debug] sess_token from Set-Cookie header:", sess_token_value)
+        _LOGGER.debug("login finalize -> sess_token present: %s", sess_token_value is not None)
 
         if sess_token_value is None:
             raise LoginError("login did not produce sess_token cookie")
@@ -421,6 +386,7 @@ class FreshrClient:
         self.sess_token = sess_token_value
         self.session.cookie_jar.update_cookies({"sess_token": self.sess_token})
         self.logged_in = True
+        _LOGGER.info("login successful")
 
         if self._on_session_update is not None:
             self._on_session_update(self.sess_token)
@@ -451,6 +417,7 @@ class FreshrClient:
             return
         if self._credentials is None:
             raise LoginError("not logged in and no credentials available for automatic re-login")
+        _LOGGER.debug("session expired or missing, re-authenticating")
         username, password = self._credentials
         await self.login(username, password, **self._login_params)
 
@@ -496,6 +463,7 @@ class FreshrClient:
                 url + quote(json.dumps(payload)), headers=req_headers, timeout=self._timeout
             ) as resp:
                 status = resp.status
+                _LOGGER.debug("fetch_devices -> status: %s", status)
                 if status in (401, 403) and attempt == 0:
                     reauth_needed = True
                 elif not (200 <= status < 300):
@@ -508,6 +476,9 @@ class FreshrClient:
                         raise ApiResponseError("devices response is not JSON")
 
             if reauth_needed:
+                _LOGGER.warning(
+                    "fetch_devices -> session rejected (status %s), re-authenticating", status
+                )
                 self.logged_in = False
                 self.sess_token = None
                 await self._ensure_session()
@@ -588,6 +559,7 @@ class FreshrClient:
                 url + quote(json.dumps(payload)), headers=req_headers, timeout=self._timeout
             ) as resp:
                 status = resp.status
+                _LOGGER.debug("fetch_device_current(%s) -> status: %s", serial, status)
                 if status in (401, 403) and attempt == 0:
                     reauth_needed = True
                 elif not (200 <= status < 300):
@@ -600,6 +572,11 @@ class FreshrClient:
                         raise ApiResponseError("device response is not JSON")
 
             if reauth_needed:
+                _LOGGER.warning(
+                    "fetch_device_current(%s) -> session rejected (status %s), re-authenticating",
+                    serial,
+                    status,
+                )
                 self.logged_in = False
                 self.sess_token = None
                 await self._ensure_session()
