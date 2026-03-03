@@ -43,6 +43,23 @@ async def setup(hass, stored_token):
     return client
 ```
 
+## Logging
+
+The library uses Python's standard `logging` module under the logger name `pyfreshr.client`. To see debug output (HTTP requests, response statuses, session events) enable it in your application:
+
+```python
+import logging
+logging.getLogger("pyfreshr.client").setLevel(logging.DEBUG)
+```
+
+In Home Assistant, add this to your `configuration.yaml`:
+
+```yaml
+logger:
+  logs:
+    pyfreshr.client: debug
+```
+
 ## Example script
 
 Run the example script (without installing the package) from the repository root:
