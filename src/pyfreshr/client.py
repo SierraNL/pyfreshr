@@ -10,8 +10,6 @@ from urllib.parse import quote, urljoin
 
 import aiohttp
 
-_LOGGER = logging.getLogger(__name__)
-
 from .const import (
     DEVICE_REQUEST_FORWARD,
     DEVICE_REQUEST_FRESH_R,
@@ -31,6 +29,8 @@ from .const import (
 )
 from .exceptions import ApiResponseError, LoginError
 from .models import DeviceReadings, DeviceSummary, DeviceType
+
+_LOGGER = logging.getLogger(__name__)
 
 _USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -476,7 +476,9 @@ class FreshrClient:
                         raise ApiResponseError("devices response is not JSON")
 
             if reauth_needed:
-                _LOGGER.warning("fetch_devices -> session rejected (status %s), re-authenticating", status)
+                _LOGGER.warning(
+                    "fetch_devices -> session rejected (status %s), re-authenticating", status
+                )
                 self.logged_in = False
                 self.sess_token = None
                 await self._ensure_session()
@@ -570,7 +572,11 @@ class FreshrClient:
                         raise ApiResponseError("device response is not JSON")
 
             if reauth_needed:
-                _LOGGER.warning("fetch_device_current(%s) -> session rejected (status %s), re-authenticating", serial, status)
+                _LOGGER.warning(
+                    "fetch_device_current(%s) -> session rejected (status %s), re-authenticating",
+                    serial,
+                    status,
+                )
                 self.logged_in = False
                 self.sess_token = None
                 await self._ensure_session()
