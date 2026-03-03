@@ -230,7 +230,6 @@ async def test_expired_session_triggers_relogin():
         "login_page_path": None,
         "api_path": None,
         "devices_path": None,
-        "debug": False,
     }
     # logged_in=False → _is_session_valid() → False → triggers re-login
 
@@ -276,7 +275,6 @@ async def test_401_triggers_relogin_and_retry():
         "login_page_path": None,
         "api_path": None,
         "devices_path": None,
-        "debug": False,
     }
 
     devices = await client.fetch_devices()
@@ -704,7 +702,6 @@ async def test_fetch_device_current_401_triggers_relogin():
         "login_page_path": None,
         "api_path": None,
         "devices_path": None,
-        "debug": False,
     }
 
     data = await client.fetch_device_current(serial)
