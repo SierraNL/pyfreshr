@@ -545,7 +545,9 @@ class FreshrClient:
                 "token": self.sess_token or "",
                 "requests": {
                     f"{serial}_current": {
-                        "request": request_name, "serial": serial, "fields": fields
+                        "request": request_name,
+                        "serial": serial,
+                        "fields": fields,
                     }
                 },
             }
