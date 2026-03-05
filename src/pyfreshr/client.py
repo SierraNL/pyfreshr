@@ -9,6 +9,7 @@ from typing import Any, NamedTuple
 from urllib.parse import quote, urljoin
 
 import aiohttp
+from yarl import URL
 
 from .const import (
     DEVICE_REQUEST_FORWARD,
@@ -404,7 +405,7 @@ class FreshrClient:
         if not self.logged_in or not self.sess_token:
             return False
         # The sess_token cookie is scoped to the dashboard domain (not base_url).
-        cookies = self.session.cookie_jar.filter_cookies(self._make_url(DEVICES_API))
+        cookies = self.session.cookie_jar.filter_cookies(URL(self._make_url(DEVICES_API)))
         return cookies.get("sess_token") is not None
 
     async def _ensure_session(self) -> None:
