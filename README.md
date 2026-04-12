@@ -97,16 +97,17 @@ Returned by `fetch_device_current()`. All numeric fields are `None` when the API
 
 | Field | Type | Unit | Description |
 |---|---|---|---|
-| `t1` | `float \| None` | °C | Supply air temperature |
-| `t2` | `float \| None` | °C | Extract air temperature |
-| `t3` | `float \| None` | °C | Temperature sensor 3 |
-| `t4` | `float \| None` | °C | Temperature sensor 4 |
+| `t1` | `float \| None` | °C | Extract air temperature (warm indoor air before heat exchanger) |
+| `t2` | `float \| None` | °C | Outdoor/supply air temperature (cold incoming air before heat exchanger) |
+| `t3` | `float \| None` | °C | Exhaust air temperature after the heat exchanger |
+| `t4` | `float \| None` | °C | Supply air temperature after the heat exchanger |
 | `flow` | `float \| None` | m³/h | Ventilation flow (calibrated) |
 | `co2` | `int \| None` | ppm | CO₂ concentration |
 | `hum` | `float \| None` | %RH | Relative humidity (temperature-adjusted) |
 | `dp` | `float \| None` | °C | Dew point |
 | `temp` | `float \| None` | °C | Temperature sensor (Forward and Monitor only) |
 | `extras` | `dict` | — | All other fields from the API, including particle measurements (`d5_25`, `d1_25`, etc. in µg/m³) |
+| `efficiency` | `float \| None` | % | Heat recovery efficiency — Fresh-R devices only (calculated property, see [Efficiency](#efficiency-devicereadingsefficiency)) |
 
 ## Supported devices
 
@@ -157,3 +158,22 @@ hum_adj = round(hum_adj, 1)  # %RH
 ```
 
 If any input value is missing or the formula produces NaN the raw humidity (rounded to 1 dp) is returned instead.
+
+### Efficiency (`DeviceReadings.efficiency`)
+
+Heat recovery efficiency is calculated from three temperature sensors:
+
+| Variable | Field | Description |
+|---|---|---|
+| T1 | `t1` | Extract air temperature (warm indoor air before heat exchanger) |
+| T2 | `t2` | Outdoor/supply air temperature (cold incoming air before heat exchanger) |
+| T4 | `t4` | Supply air temperature after the heat exchanger |
+
+```
+efficiency = (t4 - t2) / (t1 - t2) * 100  # %
+efficiency = round(efficiency, 1)
+```
+
+Returns `None` when any of `t1`, `t2`, or `t4` is unavailable, or when `t1 == t2`.
+
+> **Note:** This property is only meaningful for **Fresh-R** devices, which have a heat exchanger. Forward and Monitor devices do not expose `t4` and will always return `None`.

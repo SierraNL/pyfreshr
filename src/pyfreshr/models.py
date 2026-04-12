@@ -61,6 +61,31 @@ class DeviceReadings:
     temp: float | None = None
     extras: dict[str, Any] = field(default_factory=dict)
 
+    @property
+    def efficiency(self) -> float | None:
+        """Return the heat recovery efficiency as a percentage.
+
+        Calculated as ``(t4 - t2) / (t1 - t2) * 100``:
+
+        - ``t1`` - extract air temperature (warm indoor air before heat exchanger)
+        - ``t2`` - outdoor/supply air temperature (cold incoming air before heat exchanger)
+        - ``t4`` - supply air temperature after the heat exchanger
+
+        Only meaningful for **Fresh-R** devices, which have a heat exchanger.
+        Forward and Monitor devices do not expose ``t4`` and will always
+        return ``None``.
+
+        Returns ``None`` when any of ``t1``, ``t2``, or ``t4`` is unavailable,
+        or when ``t1 == t2`` (which would cause a division by zero).
+        The result is rounded to one decimal place.
+        """
+        if self.t1 is None or self.t2 is None or self.t4 is None:
+            return None
+        denominator = self.t1 - self.t2
+        if denominator == 0:
+            return None
+        return round((self.t4 - self.t2) / denominator * 100, 1)
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> DeviceReadings:
         if data is None:

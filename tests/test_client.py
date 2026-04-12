@@ -507,6 +507,44 @@ def test_device_readings_from_dict_invalid_flow():
 
 
 # ---------------------------------------------------------------------------
+# DeviceReadings.efficiency property tests
+# ---------------------------------------------------------------------------
+
+
+def test_efficiency_typical():
+    # t1=20 (extract/indoor), t2=0 (outdoor), t4=18 (supply after HX) → 90%
+    r = DeviceReadings(t1=20.0, t2=0.0, t4=18.0)
+    assert r.efficiency == 90.0
+
+
+def test_efficiency_rounding():
+    # (t4 - t2) / (t1 - t2) * 100 = (15 - 5) / (22 - 5) * 100 = 58.823...% → rounds to 58.8
+    r = DeviceReadings(t1=22.0, t2=5.0, t4=15.0)
+    assert r.efficiency == 58.8
+
+
+def test_efficiency_missing_t1():
+    r = DeviceReadings(t2=0.0, t4=18.0)
+    assert r.efficiency is None
+
+
+def test_efficiency_missing_t2():
+    r = DeviceReadings(t1=20.0, t4=18.0)
+    assert r.efficiency is None
+
+
+def test_efficiency_missing_t4():
+    r = DeviceReadings(t1=20.0, t2=0.0)
+    assert r.efficiency is None
+
+
+def test_efficiency_division_by_zero():
+    # t1 == t2 → undefined, returns None
+    r = DeviceReadings(t1=20.0, t2=20.0, t4=20.0)
+    assert r.efficiency is None
+
+
+# ---------------------------------------------------------------------------
 # FreshrClient utility / lifecycle tests
 # ---------------------------------------------------------------------------
 
